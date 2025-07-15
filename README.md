@@ -6,7 +6,7 @@ Ett litet hjälpmedel för att spela yatzy utan tärningar.
 
 🎲 [Yatzy](https://htmlpreview.github.io/?https://github.com/hakimsjo/yatzy/blob/master/yatzy.html)
 
-![yatzy](yatzy.png)
+![yatzy](/assets/yatzy.png)
 
 🎲 [Yatzy tärningar](https://htmlpreview.github.io/?https://github.com/hakimsjo/yatzy/blob/master/yatzy-light.html)
 

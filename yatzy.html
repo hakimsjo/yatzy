@@ -59,6 +59,7 @@
             align-items: center; /* Center items vertically in their cells */
             justify-items: center; /* Center items horizontally in their cells */
             margin: 0 auto; /* Center the grid container itself */
+            margin-bottom: 40px; /* Increased margin-bottom for more space */
         }
 
         .die {
@@ -158,10 +159,16 @@
 
         .button-container {
             display: flex;
+            flex-direction: column; /* Stack button groups vertically */
+            gap: 15px; /* Space between rows of buttons */
+            margin-bottom: 20px;
+        }
+
+        .button-row {
+            display: flex;
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
         }
 
         button {
@@ -329,6 +336,109 @@
             border-top: 2px solid #7f8c8d;
         }
 
+        /* Modal styles (shared for warning and help) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Changed to none */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            display: flex; /* Added display: flex here */
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 {
+            color: #2c3e50; /* Changed to a neutral color for general modals */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            box-shadow: none;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Specific styles for warning modal buttons */
+        .modal-overlay#resetWarningModal .modal-content h2 {
+            color: #e74c3c; /* Keep red for warning */
+        }
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn:hover {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn {
+            background-color: #bdc3c7;
+            color: #34495e;
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn:hover {
+            background-color: #95a5a6;
+        }
+
+        /* Specific styles for help modal buttons */
+        .modal-overlay#helpModal .modal-buttons button.close-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+        .modal-overlay#helpModal .modal-buttons button.close-btn:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+
+        .credits {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+
 
         @media (max-width: 768px) {
             .game-container {
@@ -340,6 +450,7 @@
             .dice-container {
                 width: 245px; /* Adjusted for 50% larger dice on smaller screens */
                 height: 245px;
+                margin-bottom: 30px; /* Adjusted margin for smaller screens */
             }
             .die {
                 width: 75px; /* Adjusted for 50% larger dice on smaller screens */
@@ -377,6 +488,7 @@
             .dice-container {
                 width: 200px; /* Adjusted for 50% larger dice on very small screens */
                 height: 200px;
+                margin-bottom: 25px; /* Adjusted margin for very small screens */
             }
             .die {
                 width: 60px; /* Adjusted for 50% larger dice on very small screens */
@@ -384,6 +496,10 @@
                 font-size: 2.25em; /* Adjusted font size */
             }
             .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .button-row {
                 flex-direction: column;
                 gap: 10px;
             }
@@ -409,10 +525,14 @@
                 <p>Aktuell Totalsumma: <span id="currentRollTotal">0</span></p>
             </div>
             <div class="button-container">
-                <button id="rollButton">� Kasta tärningar</button>
-                <button id="resetButton">🔄 Nytt spel</button>
-                <button id="helpButton">❓ Hjälp</button>
-                <button id="soundToggleButton">🔊 Ljud på</button>
+                <div class="button-row">
+                    <button id="rollButton">🎲 Kasta tärningar</button>
+                    <button id="resetButton">🔄 Nytt spel</button>
+                </div>
+                <div class="button-row">
+                    <button id="helpButton">❓ Hjälp</button>
+                    <button id="soundToggleButton">🔊 Ljud på</button>
+                </div>
             </div>
         </div>
 
@@ -566,7 +686,8 @@
         let heldDice = [false, false, false, false, false]; // Which dice are held
         let rollsMade = 0; // Number of rolls in current round
         const maxRolls = 3; // Maximum rolls per round
-        let isSoundOn = true; // New: State for sound toggle
+        let isSoundOn = true; // State for sound toggle
+        let audioContext = null; // Global AudioContext instance
 
         // Scorecard state
         const scorecard = {
@@ -602,7 +723,7 @@
         const rollButton = document.getElementById('rollButton');
         const resetButton = document.getElementById('resetButton');
         const helpButton = document.getElementById('helpButton');
-        const soundToggleButton = document.getElementById('soundToggleButton'); // New: Sound toggle button
+        const soundToggleButton = document.getElementById('soundToggleButton');
 
         const scorecardBody = document.getElementById('scorecardBody');
         const upperSumElement = document.getElementById('upperSum');
@@ -1040,8 +1161,28 @@
         function playDiceSound() {
             if (!isSoundOn) return;
 
+            // Initialize AudioContext if it hasn't been already
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // Resume context if it's suspended (common on mobile)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log("AudioContext resumed successfully.");
+                    _generateAndPlayDiceSound(); // Play sound after resuming
+                }).catch(e => console.error("Error resuming AudioContext:", e));
+            } else {
+                _generateAndPlayDiceSound(); // Play sound directly if context is running
+            }
+        }
+
+        /**
+         * Internal function to generate and play the dice sound.
+         * Assumes audioContext is already initialized and resumed if necessary.
+         */
+        function _generateAndPlayDiceSound() {
             try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const duration = 0.5; // Total duration of the shaking sound
                 const numClicks = 8; // Number of individual "clicks"
                 const clickDuration = 0.05; // Duration of each click
@@ -1073,7 +1214,7 @@
                 }
 
             } catch (e) {
-                console.error("Web Audio API not supported or failed to play sound:", e);
+                console.error("Failed to generate and play sound:", e);
             }
         }
 
@@ -1083,6 +1224,16 @@
         function toggleSound() {
             isSoundOn = !isSoundOn;
             soundToggleButton.textContent = isSoundOn ? '🔊 Ljud på' : '🔇 Ljud av';
+
+            // Attempt to initialize/resume AudioContext when sound is turned on
+            if (isSoundOn && !audioContext) {
+                playDiceSound(); // This will create and attempt to resume the context
+            } else if (!isSoundOn && audioContext && audioContext.state === 'running') {
+                // If turning sound off and context is running, suspend it
+                audioContext.suspend().then(() => {
+                    console.log("AudioContext suspended successfully.");
+                }).catch(e => console.error("Error suspending AudioContext:", e));
+            }
         }
 
 
@@ -1134,4 +1285,3 @@
     </script>
 </body>
 </html>
-�

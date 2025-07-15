@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Yatzy 🎲</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f4f8, #cdd5e0);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            max-width: 800px; /* Increased max-width to accommodate scorecard */
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .dice-section {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .die {
+            width: 80px;
+            height: 80px;
+            background-color: #ecf0f1;
+            border: 4px solid #bdc3c7;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .die.held {
+            background-color: #2ecc71;
+            border-color: #27ae60;
+            color: #ffffff;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .die:hover:not(.held):not(.disabled) {
+            background-color: #e0e6e9;
+            transform: translateY(-3px);
+        }
+
+        .die.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Animation for rolling dice */
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            25% { transform: rotate(90deg) scale(1.1); opacity: 0.8; }
+            50% { transform: rotate(180deg) scale(1); opacity: 1; }
+            75% { transform: rotate(270deg) scale(1.1); opacity: 0.8; }
+            100% { transform: rotate(360deg) scale(1); opacity: 1; }
+        }
+
+        .die.rolling {
+            animation: roll 0.5s ease-out;
+        }
+
+        .roll-info, .total-info {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #555;
+            font-weight: bold;
+        }
+        .total-info {
+            margin-top: 10px;
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button#rollButton {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        button#rollButton:hover:not(:disabled) {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        button#rollButton:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        button#resetButton {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        button#resetButton:hover:not(:disabled) {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .scorecard-section {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 30px;
+            border: 2px solid #bdc3c7;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .scorecard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .scorecard-table th, .scorecard-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e6e9;
+            text-align: left;
+            font-size: 1em;
+        }
+
+        .scorecard-table th {
+            background-color: #34495e;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .scorecard-table tr:nth-child(even) {
+            background-color: #f8fbfc;
+        }
+
+        .scorecard-table tr:hover:not(.total-row):not(.header-row) {
+            background-color: #eef2f5;
+        }
+
+        .scorecard-table td:last-child, .scorecard-table th:last-child {
+            text-align: right;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .potential-score {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        .actual-score {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .select-score-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            font-size: 0.9em;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .select-score-btn:hover:not(:disabled) {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .select-score-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .total-row {
+            background-color: #dbe4ed !important;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .total-row td {
+            border-top: 2px solid #bdc3c7;
+        }
+
+        .grand-total-row {
+            background-color: #aebfd4 !important;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        .grand-total-row td {
+            border-top: 2px solid #7f8c8d;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            box-shadow: none;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .modal-buttons button.confirm-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .modal-buttons button.confirm-btn:hover {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+        }
+
+        .modal-buttons button.cancel-btn {
+            background-color: #bdc3c7;
+            color: #34495e;
+        }
+
+        .modal-buttons button.cancel-btn:hover {
+            background-color: #95a5a6;
+        }
+
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .dice-container {
+                gap: 15px;
+            }
+            .die {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+            .scorecard-table th, .scorecard-table td {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            .select-score-btn {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+            .modal-content h2 {
+                font-size: 1.5em;
+            }
+            .modal-content p {
+                font-size: 1em;
+            }
+            .modal-buttons button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dice-container {
+                flex-direction: row;
+                gap: 10px;
+            }
+            .die {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8em;
+            }
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎲 Yatzy 🎲</h1>
+        <div class="dice-section">
+            <div class="dice-container" id="diceContainer">
+                <!-- Dice will be rendered here by JavaScript -->
+            </div>
+            <div class="roll-info">
+                <p>Kast kvar: <span id="rollsLeft">3</span></p>
+            </div>
+            <div class="total-info">
+                <p>Aktuell Totalsumma: <span id="currentRollTotal">0</span></p>
+            </div>
+            <div class="button-container">
+                <button id="rollButton">Kasta tärningar</button>
+                <button id="resetButton">Nytt spel</button>
+            </div>
+        </div>
+
+        <div class="scorecard-section">
+            <table class="scorecard-table">
+                <thead>
+                    <tr class="header-row">
+                        <th>Kategori</th>
+                        <th>Poäng</th>
+                        <th>Välj</th>
+                    </tr>
+                </thead>
+                <tbody id="scorecardBody">
+                    <!-- Upper Section -->
+                    <tr data-category="ones">
+                        <td class="category-name">Ettor</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="ones">Välj</button></td>
+                    </tr>
+                    <tr data-category="twos">
+                        <td class="category-name">Tvåor</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="twos">Välj</button></td>
+                    </tr>
+                    <tr data-category="threes">
+                        <td class="category-name">Treor</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="threes">Välj</button></td>
+                    </tr>
+                    <tr data-category="fours">
+                        <td class="category-name">Fyror</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="fours">Välj</button></td>
+                    </tr>
+                    <tr data-category="fives">
+                        <td class="category-name">Femmor</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="fives">Välj</button></td>
+                    </tr>
+                    <tr data-category="sixes">
+                        <td class="category-name">Sexor</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="sixes">Välj</button></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="category-name">Summa</td>
+                        <td id="upperSum">0</td>
+                        <td></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="category-name">Bonus (63+)</td>
+                        <td id="upperBonus">0</td>
+                        <td></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="category-name">Övre Total</td>
+                        <td id="upperTotal">0</td>
+                        <td></td>
+                    </tr>
+
+                    <!-- Lower Section -->
+                    <tr data-category="onePair">
+                        <td class="category-name">Ett par</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="onePair">Välj</button></td>
+                    </tr>
+                    <tr data-category="twoPair">
+                        <td class="category-name">Två par</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="twoPair">Välj</button></td>
+                    </tr>
+                    <tr data-category="threeOfAKind">
+                        <td class="category-name">Triss</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="threeOfAKind">Välj</button></td>
+                    </tr>
+                    <tr data-category="fourOfAKind">
+                        <td class="category-name">Fyrtal</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="fourOfAKind">Välj</button></td>
+                    </tr>
+                    <tr data-category="fullHouse">
+                        <td class="category-name">Kåk (25)</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="fullHouse">Välj</button></td>
+                    </tr>
+                    <tr data-category="smallStraight">
+                        <td class="category-name">Liten stege (30)</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="smallStraight">Välj</button></td>
+                    </tr>
+                    <tr data-category="largeStraight">
+                        <td class="category-name">Stor stege (40)</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="largeStraight">Välj</button></td>
+                    </tr>
+                    <tr data-category="yatzy">
+                        <td class="category-name">Yatzy (50)</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="yatzy">Välj</button></td>
+                    </tr>
+                    <tr data-category="chance">
+                        <td class="category-name">Chans</td>
+                        <td class="score-cell"><span class="potential-score"></span><span class="actual-score"></span></td>
+                        <td><button class="select-score-btn" data-category="chance">Välj</button></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="category-name">Nedre Total</td>
+                        <td id="lowerTotal">0</td>
+                        <td></td>
+                    </tr>
+                    <tr class="grand-total-row">
+                        <td class="category-name">Total Poäng</td>
+                        <td id="grandTotal">0</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            by Hakim & Gemini
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="modal-overlay" id="resetWarningModal">
+        <div class="modal-content">
+            <h2>Starta nytt spel?</h2>
+            <p>Är du säker på att du vill starta ett nytt spel? Alla dina nuvarande poäng kommer att raderas.</p>
+            <div class="modal-buttons">
+                <button class="confirm-btn" id="confirmResetButton">Ja, starta nytt</button>
+                <button class="cancel-btn" id="cancelResetButton">Nej, fortsätt spela</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let dice = [1, 1, 1, 1, 1]; // Current values of the five dice
+        let heldDice = [false, false, false, false, false]; // Which dice are held
+        let rollsMade = 0; // Number of rolls in current round
+        const maxRolls = 3; // Maximum rolls per round
+
+        // Scorecard state
+        const scorecard = {
+            // Upper Section Categories
+            ones: { value: 0, isFilled: false },
+            twos: { value: 0, isFilled: false }, // Fixed syntax error here
+            threes: { value: 0, isFilled: false },
+            fours: { value: 0, isFilled: false },
+            fives: { value: 0, isFilled: false },
+            sixes: { value: 0, isFilled: false },
+            // Lower Section Categories
+            onePair: { value: 0, isFilled: false }, // New category
+            twoPair: { value: 0, isFilled: false }, // New category
+            threeOfAKind: { value: 0, isFilled: false },
+            fourOfAKind: { value: 0, isFilled: false },
+            fullHouse: { value: 0, isFilled: false },
+            smallStraight: { value: 0, isFilled: false },
+            largeStraight: { value: 0, isFilled: false },
+            yatzy: { value: 0, isFilled: false },
+            chance: { value: 0, isFilled: false }
+        };
+
+        let upperSum = 0;
+        let upperBonus = 0;
+        let upperTotalScore = 0;
+        let lowerTotalScore = 0;
+        let grandTotalScore = 0;
+
+        // Get references to HTML elements
+        const diceContainer = document.getElementById('diceContainer');
+        const rollsLeftSpan = document.getElementById('rollsLeft');
+        const currentRollTotalSpan = document.getElementById('currentRollTotal');
+        const rollButton = document.getElementById('rollButton');
+        const resetButton = document.getElementById('resetButton');
+
+        const scorecardBody = document.getElementById('scorecardBody');
+        const upperSumElement = document.getElementById('upperSum');
+        const upperBonusElement = document.getElementById('upperBonus');
+        const upperTotalElement = document.getElementById('upperTotal');
+        const lowerTotalElement = document.getElementById('lowerTotal');
+        const grandTotalElement = document.getElementById('grandTotal');
+
+        // Modal elements
+        const resetWarningModal = document.getElementById('resetWarningModal');
+        const confirmResetButton = document.getElementById('confirmResetButton');
+        const cancelResetButton = document.getElementById('cancelResetButton');
+
+        /**
+         * Counts the occurrences of each die value.
+         * @param {Array<number>} diceValues - An array of die values.
+         * @returns {Object} An object where keys are die values and values are their counts.
+         */
+        function getCounts(diceValues) {
+            const counts = {};
+            diceValues.forEach(die => {
+                counts[die] = (counts[die] || 0) + 1;
+            });
+            return counts;
+        }
+
+        /**
+         * Calculates the score for a given Yatzy category based on the current dice.
+         * @param {string} categoryName - The name of the category (e.g., 'ones', 'fullHouse').
+         * @param {Array<number>} currentDice - The array of current die values.
+         * @returns {number} The calculated score for the category.
+         */
+        function calculateCategoryScore(categoryName, currentDice) {
+            const counts = getCounts(currentDice);
+            const sortedDice = [...currentDice].sort((a, b) => a - b);
+            let score = 0;
+
+            // Define a map for upper section categories to their numeric values
+            const upperSectionValueMap = {
+                'ones': 1,
+                'twos': 2,
+                'threes': 3,
+                'fours': 4,
+                'fives': 5,
+                'sixes': 6
+            };
+
+            // Check if the category is in the upper section
+            if (upperSectionValueMap.hasOwnProperty(categoryName)) {
+                const value = upperSectionValueMap[categoryName];
+                score = (counts[value] || 0) * value;
+            } else {
+                // Handle lower section categories
+                switch (categoryName) {
+                    case 'onePair':
+                        // Find all values that form a pair or more (e.g., three of a kind also counts as a pair)
+                        const pairsFoundOnePair = Object.keys(counts).filter(dieValue => counts[dieValue] >= 2).map(Number);
+                        if (pairsFoundOnePair.length > 0) {
+                            // Get the highest value pair
+                            const highestPairValue = Math.max(...pairsFoundOnePair);
+                            score = highestPairValue * 2;
+                        }
+                        break;
+                    case 'twoPair':
+                        // Find all values that form a pair or more
+                        const pairsFoundTwoPair = Object.keys(counts).filter(dieValue => counts[dieValue] >= 2).map(Number);
+                        // Sort them in descending order to easily pick the two highest distinct pairs
+                        pairsFoundTwoPair.sort((a, b) => b - a);
+
+                        if (pairsFoundTwoPair.length >= 2) {
+                            // Check if the two highest values are distinct
+                            if (pairsFoundTwoPair[0] !== pairsFoundTwoPair[1]) {
+                                score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
+                            } else if (pairsFoundTwoPair.length >= 3) {
+                                // Handles cases like [6,6,6,5,5] where 6 is a triple and 5 is a pair
+                                // The two highest pairs are 6 and 5
+                                score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
+                            } else if (pairsFoundTwoPair.length === 1 && counts[pairsFoundTwoPair[0]] >= 4) {
+                                // If there's only one value with count >= 2, but it's a four of a kind (e.g., [4,4,4,4,1])
+                                // This means it forms two pairs of the same value.
+                                // In standard Yatzy, two pairs must be distinct values.
+                                // If the highest pair value has a count of 4 or 5, it does not count as two *distinct* pairs.
+                                // So, if pairsFoundTwoPair.length is 1, and that single value has count >= 4, it's not two pairs.
+                                score = 0; // Not two distinct pairs
+                            }
+                        }
+                        break;
+                    case 'threeOfAKind':
+                        if (Object.values(counts).some(count => count >= 3)) {
+                            score = currentDice.reduce((sum, val) => sum + val, 0);
+                        }
+                        break;
+                    case 'fourOfAKind':
+                        if (Object.values(counts).some(count => count >= 4)) {
+                            score = currentDice.reduce((sum, val) => sum + val, 0);
+                        }
+                        break;
+                    case 'fullHouse':
+                        const hasThree = Object.values(counts).some(count => count === 3);
+                        const hasTwo = Object.values(counts).some(count => count === 2);
+                        if (hasThree && hasTwo) {
+                            score = 25;
+                        }
+                        break;
+                    case 'smallStraight':
+                        const uniqueDice = [...new Set(sortedDice)];
+                        const smallStraightPatterns = [
+                            [1, 2, 3, 4],
+                            [2, 3, 4, 5],
+                            [3, 4, 5, 6]
+                        ];
+                        for (const pattern of smallStraightPatterns) {
+                            // Check if the unique dice contain the pattern sequence
+                            let found = true;
+                            for (let i = 0; i < pattern.length; i++) {
+                                if (!uniqueDice.includes(pattern[i])) {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            if (found) {
+                                score = 30;
+                                break;
+                            }
+                        }
+                        break;
+                    case 'largeStraight':
+                        const largeStraight1 = [1, 2, 3, 4, 5];
+                        const largeStraight2 = [2, 3, 4, 5, 6];
+                        if (sortedDice.every((val, i) => val === largeStraight1[i]) ||
+                            sortedDice.every((val, i) => val === largeStraight2[i])) {
+                            score = 40;
+                        }
+                        break;
+                    case 'yatzy':
+                        if (Object.values(counts).some(count => count === 5)) {
+                            score = 50;
+                        }
+                        break;
+                    case 'chance':
+                        score = currentDice.reduce((sum, val) => sum + val, 0);
+                        break;
+                    default:
+                        score = 0;
+                }
+            }
+            return score;
+        }
+
+        /**
+         * Renders the dice on the screen and updates roll info.
+         */
+        function renderDice() {
+            diceContainer.innerHTML = '';
+            dice.forEach((value, index) => {
+                const dieElement = document.createElement('div');
+                dieElement.classList.add('die');
+                if (heldDice[index]) {
+                    dieElement.classList.add('held');
+                }
+                // Disable dice toggling if no rolls left and no score selected yet
+                // OR if no rolls have been made yet (start of game/new round)
+                if ((rollsMade >= maxRolls && rollButton.disabled) || rollsMade === 0) {
+                     dieElement.classList.add('disabled');
+                }
+                dieElement.textContent = value;
+                dieElement.addEventListener('click', () => toggleHold(index));
+                diceContainer.appendChild(dieElement);
+            });
+            rollsLeftSpan.textContent = maxRolls - rollsMade;
+            currentRollTotalSpan.textContent = calculateTotal(dice);
+            // Enable/disable roll button based on rolls left
+            rollButton.disabled = (rollsMade >= maxRolls);
+
+            updateScorecardUI(); // Always update scorecard when dice are rendered
+        }
+
+        /**
+         * Toggles the held status of a specific die.
+         * @param {number} index - The index of the die to toggle (0-4).
+         */
+        function toggleHold(index) {
+            // Only allow toggling if at least one roll has been made AND
+            // (there are rolls left OR the roll button is not disabled, meaning a score hasn't been forced yet)
+            if (rollsMade > 0 && (rollsMade < maxRolls || (rollsMade === maxRolls && !rollButton.disabled))) {
+                heldDice[index] = !heldDice[index];
+                renderDice();
+            }
+        }
+
+        /**
+         * Rolls the dice that are not currently held.
+         * Adds a rolling animation to the dice.
+         * Updates the roll counter and re-renders the dice.
+         */
+        function rollDice() {
+            if (rollsMade < maxRolls) {
+                const dieElements = diceContainer.querySelectorAll('.die');
+                dieElements.forEach((dieElement, index) => {
+                    if (!heldDice[index]) {
+                        dieElement.classList.add('rolling');
+                    }
+                });
+
+                // Disable roll button temporarily during animation
+                rollButton.disabled = true;
+
+                setTimeout(() => {
+                    dice.forEach((value, index) => {
+                        if (!heldDice[index]) {
+                            dice[index] = Math.floor(Math.random() * 6) + 1;
+                        }
+                    });
+                    rollsMade++;
+                    renderDice(); // Re-render to show new values and update totals
+
+                    // Remove rolling animation class after rendering
+                    dieElements.forEach((dieElement) => {
+                        dieElement.classList.remove('rolling');
+                    });
+
+                    // Re-enable roll button if rolls are left, otherwise keep disabled until score is chosen
+                    if (rollsMade < maxRolls) {
+                        rollButton.disabled = false;
+                    } else {
+                        // If max rolls reached, disable roll button and prompt user to select score
+                        rollButton.disabled = true;
+                    }
+                }, 500); // Animation duration
+            }
+        }
+
+        /**
+         * Calculates the sum of all dice values.
+         * @returns {number} The total sum of the dice.
+         */
+        function calculateTotal(diceValues) {
+            return diceValues.reduce((sum, value) => sum + value, 0);
+        }
+
+        /**
+         * Updates the scorecard UI with potential and actual scores.
+         * Enables/disables "Välj" buttons based on category status.
+         */
+        function updateScorecardUI() {
+            let currentUpperSum = 0;
+            let currentLowerSum = 0;
+
+            for (const category in scorecard) {
+                const rowElement = scorecardBody.querySelector(`[data-category="${category}"]`);
+                if (!rowElement) continue; // Skip if row not found
+
+                const potentialScoreSpan = rowElement.querySelector('.potential-score');
+                const actualScoreSpan = rowElement.querySelector('.actual-score');
+                const selectButton = rowElement.querySelector('.select-score-btn');
+
+                if (scorecard[category].isFilled) {
+                    // If filled, show actual score and disable button
+                    potentialScoreSpan.textContent = '';
+                    actualScoreSpan.textContent = scorecard[category].value;
+                    selectButton.disabled = true;
+                    selectButton.textContent = 'Vald';
+                    selectButton.style.backgroundColor = '#27ae60'; // Green for selected
+                } else {
+                    // If not filled, show potential score and enable button (if rolls made)
+                    potentialScoreSpan.textContent = `(${calculateCategoryScore(category, dice)})`;
+                    actualScoreSpan.textContent = '';
+                    // Only enable select button if at least one roll has been made
+                    selectButton.disabled = (rollsMade === 0);
+                    selectButton.textContent = 'Välj';
+                    selectButton.style.backgroundColor = '#3498db'; // Blue for selectable
+                }
+
+                // Sum up scores for totals
+                if (scorecard[category].isFilled) {
+                    if (['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'].includes(category)) {
+                        currentUpperSum += scorecard[category].value;
+                    } else {
+                        currentLowerSum += scorecard[category].value;
+                    }
+                }
+            }
+
+            // Update Upper Section Totals
+            upperSum = currentUpperSum;
+            upperSumElement.textContent = upperSum;
+
+            upperBonus = (upperSum >= 63) ? 35 : 0;
+            upperBonusElement.textContent = upperBonus;
+
+            upperTotalScore = upperSum + upperBonus;
+            upperTotalElement.textContent = upperTotalScore;
+
+            // Update Lower Section Total
+            lowerTotalScore = currentLowerSum;
+            lowerTotalElement.textContent = lowerTotalScore;
+
+            // Update Grand Total
+            grandTotalScore = upperTotalScore + lowerTotalScore;
+            grandTotalElement.textContent = grandTotalScore;
+        }
+
+        /**
+         * Handles selecting a score for a category.
+         * @param {string} categoryName - The name of the category to select.
+         */
+        function selectScore(categoryName) {
+            if (scorecard[categoryName].isFilled) {
+                console.log(`Kategori ${categoryName} är redan vald.`);
+                return; // Category already filled, do nothing
+            }
+
+            const score = calculateCategoryScore(categoryName, dice);
+            scorecard[categoryName].value = score;
+            scorecard[categoryName].isFilled = true;
+
+            // Reset for next round
+            dice = [1, 1, 1, 1, 1];
+            heldDice = [false, false, false, false, false];
+            rollsMade = 0;
+
+            renderDice(); // Re-render dice and scorecard
+            rollButton.disabled = false; // Enable roll button for new round
+        }
+
+        /**
+         * Resets the entire game to its initial state.
+         */
+        function resetGame() {
+            // Reset dice and roll counter
+            dice = [1, 1, 1, 1, 1];
+            heldDice = [false, false, false, false, false];
+            rollsMade = 0;
+
+            // Reset scorecard
+            for (const category in scorecard) {
+                scorecard[category].value = 0;
+                scorecard[category].isFilled = false;
+            }
+
+            // Reset totals
+            upperSum = 0;
+            upperBonus = 0;
+            upperTotalScore = 0;
+            lowerTotalScore = 0;
+            grandTotalScore = 0;
+
+            renderDice(); // Re-render everything
+            rollButton.disabled = false; // Ensure roll button is enabled
+        }
+
+        // --- Modal Functions ---
+        /**
+         * Displays the reset warning modal.
+         */
+        function showResetWarning() {
+            resetWarningModal.classList.add('visible');
+        }
+
+        /**
+         * Hides the reset warning modal.
+         */
+        function hideResetWarning() {
+            resetWarningModal.classList.remove('visible');
+        }
+
+        // --- Event Listeners ---
+        // Add event listener to "Välj" buttons using event delegation
+        scorecardBody.addEventListener('click', (event) => {
+            if (event.target.classList.contains('select-score-btn')) {
+                const category = event.target.dataset.category;
+                selectScore(category);
+            }
+        });
+
+        // Add event listeners to main buttons
+        rollButton.addEventListener('click', rollDice);
+
+        // Modified resetButton listener to show warning modal
+        resetButton.addEventListener('click', showResetWarning);
+
+        // Modal button listeners
+        confirmResetButton.addEventListener('click', () => {
+            resetGame();
+            hideResetWarning();
+        });
+
+        cancelResetButton.addEventListener('click', hideResetWarning);
+
+
+        // Initial render when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDice();
+            updateScorecardUI(); // Initial scorecard render
+        });
+    </script>
+</body>
+</html>

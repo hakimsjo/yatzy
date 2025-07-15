@@ -217,6 +217,17 @@
             box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
         }
 
+        button#soundToggleButton { /* New style for sound toggle button */
+            background: linear-gradient(45deg, #6c757d, #495057); /* Greyish gradient */
+            color: white;
+        }
+
+        button#soundToggleButton:hover {
+            background: linear-gradient(45deg, #495057, #6c757d);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+
 
         .scorecard-section {
             width: 100%;
@@ -503,6 +514,7 @@
                 <button id="rollButton">🎲 Kasta tärningar</button>
                 <button id="resetButton">🔄 Nytt spel</button>
                 <button id="helpButton">❓ Hjälp</button>
+                <button id="soundToggleButton">🔊 Ljud på</button>
             </div>
         </div>
 
@@ -656,6 +668,7 @@
         let heldDice = [false, false, false, false, false]; // Which dice are held
         let rollsMade = 0; // Number of rolls in current round
         const maxRolls = 3; // Maximum rolls per round
+        let isSoundOn = true; // New: State for sound toggle
 
         // Scorecard state
         const scorecard = {
@@ -691,6 +704,7 @@
         const rollButton = document.getElementById('rollButton');
         const resetButton = document.getElementById('resetButton');
         const helpButton = document.getElementById('helpButton');
+        const soundToggleButton = document.getElementById('soundToggleButton'); // New: Sound toggle button
 
         const scorecardBody = document.getElementById('scorecardBody');
         const upperSumElement = document.getElementById('upperSum');
@@ -926,6 +940,9 @@
                     dieElement.classList.add('rolling');
                 });
 
+                // Play sound if enabled
+                playDiceSound();
+
                 // Disable roll button temporarily during animation
                 rollButton.disabled = true;
 
@@ -1119,6 +1136,57 @@
             helpModal.classList.remove('visible');
         }
 
+        /**
+         * Plays a "shaking dices" sound using Web Audio API.
+         */
+        function playDiceSound() {
+            if (!isSoundOn) return;
+
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const duration = 0.5; // Total duration of the shaking sound
+                const numClicks = 8; // Number of individual "clicks"
+                const clickDuration = 0.05; // Duration of each click
+
+                for (let i = 0; i < numClicks; i++) {
+                    const startTime = audioContext.currentTime + (i * (duration / numClicks));
+
+                    // Create a short burst of white noise for the "click"
+                    const bufferSize = audioContext.sampleRate * clickDuration;
+                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let j = 0; j < bufferSize; j++) {
+                        output[j] = Math.random() * 0.8 - 0.4; // Slightly lower amplitude noise
+                    }
+
+                    const noiseSource = audioContext.createBufferSource();
+                    noiseSource.buffer = noiseBuffer;
+
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.4 + Math.random() * 0.2, startTime + 0.01); // Quick attack with slight randomness
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + clickDuration); // Fast decay
+
+                    noiseSource.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    noiseSource.start(startTime);
+                    noiseSource.stop(startTime + clickDuration);
+                }
+
+            } catch (e) {
+                console.error("Web Audio API not supported or failed to play sound:", e);
+            }
+        }
+
+        /**
+         * Toggles the sound on/off and updates the button text.
+         */
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            soundToggleButton.textContent = isSoundOn ? '🔊 Ljud på' : '🔇 Ljud av';
+        }
+
 
         // --- Event Listeners ---
         // Add event listener to "Välj" buttons using event delegation
@@ -1137,6 +1205,9 @@
 
         // New: Help button listener
         helpButton.addEventListener('click', showHelpModal);
+
+        // New: Sound toggle button listener
+        soundToggleButton.addEventListener('click', toggleSound);
 
         // Modal button listeners
         confirmResetButton.addEventListener('click', () => {
@@ -1160,6 +1231,7 @@
             }
             renderDice(true); // Pass true for initial render to disable dice
             updateScorecardUI(); // Initial scorecard render
+            soundToggleButton.textContent = isSoundOn ? '🔊 Ljud på' : '🔇 Ljud av'; // Set initial button text
         });
     </script>
 </body>

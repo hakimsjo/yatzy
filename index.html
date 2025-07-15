@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatzy Tärningsspel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f4f8, #cdd5e0);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .die {
+            width: 80px;
+            height: 80px;
+            background-color: #ecf0f1;
+            border: 4px solid #bdc3c7;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .die.held {
+            background-color: #2ecc71;
+            border-color: #27ae60;
+            color: #ffffff;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .die:hover:not(.held) {
+            background-color: #e0e6e9;
+            transform: translateY(-3px);
+        }
+
+        .die.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Animation for rolling dice */
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            25% { transform: rotate(90deg) scale(1.1); opacity: 0.8; }
+            50% { transform: rotate(180deg) scale(1); opacity: 1; }
+            75% { transform: rotate(270deg) scale(1.1); opacity: 0.8; }
+            100% { transform: rotate(360deg) scale(1); opacity: 1; }
+        }
+
+        .die.rolling {
+            animation: roll 0.5s ease-out;
+        }
+
+        .roll-info, .total-info {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #555;
+            font-weight: bold;
+        }
+        .total-info {
+            margin-top: 10px;
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button#rollButton {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        button#rollButton:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        button#rollButton:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        button#resetButton {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        button#resetButton:hover {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .dice-container {
+                flex-direction: row;
+                gap: 15px;
+            }
+            .die {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            button {
+                padding: 12px 25px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Yatzy Tärningsspel</h1>
+        <div class="dice-container" id="diceContainer">
+            <!-- Dice will be rendered here by JavaScript -->
+        </div>
+        <div class="roll-info">
+            <p>Kast kvar: <span id="rollsLeft">3</span></p>
+        </div>
+        <div class="total-info">
+            <p>Totalsumma: <span id="currentTotal">0</span></p>
+        </div>
+        <div class="button-container">
+            <button id="rollButton">Kasta tärningar</button>
+            <button id="resetButton">Starta om</button>
+        </div>
+    </div>
+
+    <script>
+        // Array to store the current values of the five dice
+        let dice = [1, 1, 1, 1, 1];
+        // Array to keep track of which dice are held (true if held, false if not)
+        let heldDice = [false, false, false, false, false];
+        // Counter for the number of rolls made in the current round
+        let rollsMade = 0;
+        // Maximum number of rolls allowed per round
+        const maxRolls = 3;
+
+        // Get references to the HTML elements
+        const diceContainer = document.getElementById('diceContainer');
+        const rollsLeftSpan = document.getElementById('rollsLeft');
+        const currentTotalSpan = document.getElementById('currentTotal'); // New element for total
+        const rollButton = document.getElementById('rollButton');
+        const resetButton = document.getElementById('resetButton');
+
+        /**
+         * Calculates the sum of all dice values.
+         * @returns {number} The total sum of the dice.
+         */
+        function calculateTotal() {
+            return dice.reduce((sum, value) => sum + value, 0);
+        }
+
+        /**
+         * Renders the dice on the screen based on their current values and held status.
+         * Each die is represented by a div with its value and a class for styling.
+         * Click listeners are added to each die to toggle its held status.
+         */
+        function renderDice() {
+            // Clear existing dice elements
+            diceContainer.innerHTML = '';
+            // Iterate over each die
+            dice.forEach((value, index) => {
+                // Create a new div element for the die
+                const dieElement = document.createElement('div');
+                dieElement.classList.add('die'); // Add base styling class
+                // Add 'held' class if the die is currently held
+                if (heldDice[index]) {
+                    dieElement.classList.add('held');
+                }
+                // Add 'disabled' class if rolls are exhausted, to visually indicate they can't be clicked
+                if (rollsMade >= maxRolls) {
+                    dieElement.classList.add('disabled');
+                }
+                // Set the text content of the die to its value
+                dieElement.textContent = value;
+                // Add a click event listener to toggle the held status of the die
+                dieElement.addEventListener('click', () => toggleHold(index));
+                // Append the die element to the dice container
+                diceContainer.appendChild(dieElement);
+            });
+            // Update the display of remaining rolls
+            rollsLeftSpan.textContent = maxRolls - rollsMade;
+            // Update the display of the current total
+            currentTotalSpan.textContent = calculateTotal();
+            // Disable the roll button if max rolls are reached
+            rollButton.disabled = (rollsMade >= maxRolls);
+        }
+
+        /**
+         * Toggles the held status of a specific die.
+         * @param {number} index - The index of the die to toggle (0-4).
+         */
+        function toggleHold(index) {
+            // Only allow toggling if there are rolls left (i.e., not after the last roll)
+            if (rollsMade < maxRolls) {
+                heldDice[index] = !heldDice[index]; // Invert the held status
+                renderDice(); // Re-render the dice to update their appearance
+            }
+        }
+
+        /**
+         * Rolls the dice that are not currently held.
+         * Adds a rolling animation to the dice.
+         * Updates the roll counter and re-renders the dice.
+         */
+        function rollDice() {
+            // Only proceed if there are rolls left
+            if (rollsMade < maxRolls) {
+                // Add rolling animation class to dice that will be rolled
+                const dieElements = diceContainer.querySelectorAll('.die');
+                dieElements.forEach((dieElement, index) => {
+                    if (!heldDice[index]) {
+                        dieElement.classList.add('rolling');
+                    }
+                });
+
+                // Set a timeout to remove the animation class and update dice values after animation
+                setTimeout(() => {
+                    dice.forEach((value, index) => {
+                        if (!heldDice[index]) {
+                            dice[index] = Math.floor(Math.random() * 6) + 1;
+                        }
+                    });
+                    rollsMade++; // Increment the roll counter
+                    renderDice(); // Re-render the dice to show new values and update total
+
+                    // Remove rolling animation class after rendering
+                    dieElements.forEach((dieElement) => {
+                        dieElement.classList.remove('rolling');
+                    });
+                }, 500); // Animation duration is 0.5s, so remove class after that
+            }
+        }
+
+        /**
+         * Resets the game to its initial state.
+         * All dice are reset to 1, no dice are held, and roll counter is reset.
+         */
+        function resetGame() {
+            dice = [1, 1, 1, 1, 1]; // Reset dice values
+            heldDice = [false, false, false, false, false]; // Release all held dice
+            rollsMade = 0; // Reset roll counter
+            renderDice(); // Re-render the dice
+            rollButton.disabled = false; // Enable the roll button
+        }
+
+        // Add event listeners to the buttons
+        rollButton.addEventListener('click', rollDice);
+        resetButton.addEventListener('click', resetGame);
+
+        // Initial render of the dice when the page loads
+        document.addEventListener('DOMContentLoaded', renderDice);
+    </script>
+</body>
+</html>

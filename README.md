@@ -2,7 +2,7 @@
 
 Ett litet hjälpmedel för att spela yatzy utan tärningar. 
 
-ℹ️ Alla spelare bör ha denna på sin mobil. Slå ditt slag och välj vilka tärningar du vill spara. När du kastat dina tre kast så lägg in poängen i tabellen genom att klicka på välj. Spelet visar vilka val som är möjliga. Vill man ha mer information eller om man man bara vill ha digitala tärningar kan man använda yatzy tärning versionen som finns på [github](https://github.com/hakimsjo/yatzy).
+ℹ️ Alla spelare bör ha denna på sin mobil för att vara med och spela. Slå ditt slag och välj vilka tärningar du vill spara. När du kastat dina tre kast så lägg in poängen i tabellen genom att klicka på välj. Spelet visar vilka val som är möjliga. När du valt är det nästa spelare att göra desamma. Gör detta tills det inte finns några möjliga val. Vill man ha mer information eller om man man bara vill ha digitala tärningar kan man använda yatzy tärning versionen som finns på [github](https://github.com/hakimsjo/yatzy).
 
 🎲 [Yatzy](https://htmlpreview.github.io/?https://github.com/hakimsjo/yatzy/blob/master/yatzy.html)
 

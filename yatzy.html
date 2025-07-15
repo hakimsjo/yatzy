@@ -114,6 +114,16 @@
             animation: pulse 1s infinite alternate; /* Optional: subtle pulse effect */
         }
 
+        /* New: All dice turn blue on the final roll */
+        .die.final-roll-blue {
+            background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient like roll button */
+            border-color: #2980b9;
+            color: white;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+            opacity: 1 !important; /* Ensure it overrides .disabled opacity */
+        }
+
+
         @keyframes pulse {
             from { transform: scale(1); }
             to { transform: scale(1.05); }
@@ -633,7 +643,7 @@
     <div class="modal-overlay" id="helpModal">
         <div class="modal-content">
             <h2>ℹ️ Hjälp</h2>
-            <p>Alla spelare bör ha denna app på sin mobil för att vara med och spela. Slå ditt slag och välj vilka tärningar du vill spara. När du kastat dina tre kast så lägg in poängen i tabellen genom att klicka på välj. Spelet visar vilka val som är möjliga. Nu är det nästa spelares tur som gör det samma. Gör detta tills inga fler spel är möjliga. Vill man ha mer information eller om man man bara vill ha digitala tärningar kan man använda yatzy tärning versionen som finns på <a href="https://github.com/hakimsjo/yatzy" target="_blank" rel="noopener noreferrer">github</a>.</p>
+            <p>Alla spelare bör ha denna på sin mobil för att vara med och spela. Slå ditt slag och välj vilka tärningar du vill spara. När du kastat dina tre kast så lägg in poängen i tabellen genom att klicka på välj. Spelet visar vilka val som är möjliga. När du valt är det nästa spelare att göra desamma. Gör detta tills det inte finns några möjliga val. Vill man ha mer information eller om man man bara vill ha digitala tärningar kan man använda yatzy tärning versionen som finns på <a href="https://github.com/hakimsjo/yatzy" target="_blank" rel="noopener noreferrer">github</a>.</p>
             <div class="modal-buttons">
                 <button class="close-btn" id="closeHelpButton">✖️ Stäng</button>
             </div>

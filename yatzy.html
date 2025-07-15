@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎲 Yatzy 🎲</title>
+    <title>Yatzy Tärningsspel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -93,6 +93,21 @@
             cursor: not-allowed;
         }
 
+        /* New: Highlight for relevant dice on last roll */
+        .die.highlight-last-roll {
+            background-color: #f39c12; /* Orange color for highlight */
+            border-color: #e67e22;
+            color: white;
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+            animation: pulse 1s infinite alternate; /* Optional: subtle pulse effect */
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+
         /* Animation for rolling dice */
         @keyframes roll {
             0% { transform: rotate(0deg) scale(1); opacity: 1; }
@@ -168,6 +183,18 @@
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
         }
+
+        button#helpButton {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad); /* Purple gradient */
+            color: white;
+        }
+
+        button#helpButton:hover {
+            background: linear-gradient(45deg, #8e44ad, #9b59b6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
+        }
+
 
         .scorecard-section {
             width: 100%;
@@ -269,7 +296,7 @@
             border-top: 2px solid #7f8c8d;
         }
 
-        /* Modal styles */
+        /* Modal styles (shared for warning and help) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -308,7 +335,7 @@
         }
 
         .modal-content h2 {
-            color: #e74c3c;
+            color: #2c3e50; /* Changed to a neutral color for general modals */
             margin-bottom: 20px;
             font-size: 1.8em;
         }
@@ -334,22 +361,41 @@
             letter-spacing: normal;
         }
 
-        .modal-buttons button.confirm-btn {
+        /* Specific styles for warning modal buttons */
+        .modal-overlay#resetWarningModal .modal-content h2 {
+            color: #e74c3c; /* Keep red for warning */
+        }
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn {
             background: linear-gradient(45deg, #e74c3c, #c0392b);
             color: white;
         }
 
-        .modal-buttons button.confirm-btn:hover {
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn:hover {
             background: linear-gradient(45deg, #c0392b, #e74c3c);
         }
 
-        .modal-buttons button.cancel-btn {
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn {
             background-color: #bdc3c7;
             color: #34495e;
         }
 
-        .modal-buttons button.cancel-btn:hover {
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn:hover {
             background-color: #95a5a6;
+        }
+
+        /* Specific styles for help modal buttons */
+        .modal-overlay#helpModal .modal-buttons button.close-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+        .modal-overlay#helpModal .modal-buttons button.close-btn:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+
+        .credits {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 20px;
         }
 
 
@@ -426,8 +472,9 @@
                 <p>Aktuell Totalsumma: <span id="currentRollTotal">0</span></p>
             </div>
             <div class="button-container">
-                <button id="rollButton">Kasta tärningar</button>
-                <button id="resetButton">Nytt spel</button>
+                <button id="rollButton">🎲 Kasta tärningar</button>
+                <button id="resetButton">🔄 Nytt spel</button>
+                <button id="helpButton">❓ Hjälp</button>
             </div>
         </div>
 
@@ -546,6 +593,8 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+        <div class="credits">
             by Hakim & Gemini
         </div>
     </div>
@@ -556,8 +605,19 @@
             <h2>Starta nytt spel?</h2>
             <p>Är du säker på att du vill starta ett nytt spel? Alla dina nuvarande poäng kommer att raderas.</p>
             <div class="modal-buttons">
-                <button class="confirm-btn" id="confirmResetButton">Ja, starta nytt</button>
-                <button class="cancel-btn" id="cancelResetButton">Nej, fortsätt spela</button>
+                <button class="confirm-btn" id="confirmResetButton">✅ Ja, starta nytt</button>
+                <button class="cancel-btn" id="cancelResetButton">❌ Nej, fortsätt spela</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-content">
+            <h2>ℹ️ Hjälp</h2>
+            <p>Alla spelare bör ha denna på sin mobil. Slå ditt slag och välj vilka tärningar du vill spara. När du kastat dina tre kast så lägg in poängen i tabellen genom att klicka på välj. Spelet visar vilka val som är möjliga. Vill man ha mer information eller om man man bara vill ha digitala tärningar kan man använda yatzy tärning versionen som finns på <a href="https://github.com/hakimsjo/yatzy" target="_blank" rel="noopener noreferrer">github</a>.</p>
+            <div class="modal-buttons">
+                <button class="close-btn" id="closeHelpButton">✖️ Stäng</button>
             </div>
         </div>
     </div>
@@ -573,14 +633,14 @@
         const scorecard = {
             // Upper Section Categories
             ones: { value: 0, isFilled: false },
-            twos: { value: 0, isFilled: false }, // Fixed syntax error here
+            twos: { value: 0, isFilled: false },
             threes: { value: 0, isFilled: false },
             fours: { value: 0, isFilled: false },
             fives: { value: 0, isFilled: false },
             sixes: { value: 0, isFilled: false },
             // Lower Section Categories
-            onePair: { value: 0, isFilled: false }, // New category
-            twoPair: { value: 0, isFilled: false }, // New category
+            onePair: { value: 0, isFilled: false },
+            twoPair: { value: 0, isFilled: false },
             threeOfAKind: { value: 0, isFilled: false },
             fourOfAKind: { value: 0, isFilled: false },
             fullHouse: { value: 0, isFilled: false },
@@ -602,6 +662,7 @@
         const currentRollTotalSpan = document.getElementById('currentRollTotal');
         const rollButton = document.getElementById('rollButton');
         const resetButton = document.getElementById('resetButton');
+        const helpButton = document.getElementById('helpButton');
 
         const scorecardBody = document.getElementById('scorecardBody');
         const upperSumElement = document.getElementById('upperSum');
@@ -614,6 +675,8 @@
         const resetWarningModal = document.getElementById('resetWarningModal');
         const confirmResetButton = document.getElementById('confirmResetButton');
         const cancelResetButton = document.getElementById('cancelResetButton');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpButton = document.getElementById('closeHelpButton');
 
         /**
          * Counts the occurrences of each die value.
@@ -753,8 +816,9 @@
 
         /**
          * Renders the dice on the screen and updates roll info.
+         * @param {boolean} [isInitialRender=false] - True if this is the very first render of the game.
          */
-        function renderDice() {
+        function renderDice(isInitialRender = false) {
             diceContainer.innerHTML = '';
             dice.forEach((value, index) => {
                 const dieElement = document.createElement('div');
@@ -762,11 +826,28 @@
                 if (heldDice[index]) {
                     dieElement.classList.add('held');
                 }
-                // Disable dice toggling if no rolls left and no score selected yet
-                // OR if no rolls have been made yet (start of game/new round)
-                if ((rollsMade >= maxRolls && rollButton.disabled) || rollsMade === 0) {
+                // Disable dice toggling if no rolls have been made yet (start of game/new round)
+                // or if max rolls are reached and the roll button is disabled (score needs to be chosen).
+                if (isInitialRender || (rollsMade >= maxRolls && rollButton.disabled)) {
                      dieElement.classList.add('disabled');
                 }
+
+                // Highlight relevant dice on the last roll for upper section categories
+                if (rollsMade === maxRolls && !isInitialRender) { // Only highlight after actual rolls, not initial state
+                    const dieValue = parseInt(value);
+                    const upperSectionValueMap = {
+                        'ones': 1, 'twos': 2, 'threes': 3,
+                        'fours': 4, 'fives': 5, 'sixes': 6
+                    };
+
+                    // Check if any upper section category for this die value is NOT filled
+                    const categoryName = Object.keys(upperSectionValueMap).find(key => upperSectionValueMap[key] === dieValue);
+
+                    if (categoryName && !scorecard[categoryName].isFilled) {
+                        dieElement.classList.add('highlight-last-roll');
+                    }
+                }
+
                 dieElement.textContent = value;
                 dieElement.addEventListener('click', () => toggleHold(index));
                 diceContainer.appendChild(dieElement);
@@ -968,6 +1049,21 @@
             resetWarningModal.classList.remove('visible');
         }
 
+        /**
+         * Displays the help modal.
+         */
+        function showHelpModal() {
+            helpModal.classList.add('visible');
+        }
+
+        /**
+         * Hides the help modal.
+         */
+        function hideHelpModal() {
+            helpModal.classList.remove('visible');
+        }
+
+
         // --- Event Listeners ---
         // Add event listener to "Välj" buttons using event delegation
         scorecardBody.addEventListener('click', (event) => {
@@ -983,6 +1079,9 @@
         // Modified resetButton listener to show warning modal
         resetButton.addEventListener('click', showResetWarning);
 
+        // New: Help button listener
+        helpButton.addEventListener('click', showHelpModal);
+
         // Modal button listeners
         confirmResetButton.addEventListener('click', () => {
             resetGame();
@@ -991,10 +1090,13 @@
 
         cancelResetButton.addEventListener('click', hideResetWarning);
 
+        // New: Close help button listener
+        closeHelpButton.addEventListener('click', hideHelpModal);
+
 
         // Initial render when the page loads
         document.addEventListener('DOMContentLoaded', () => {
-            renderDice();
+            renderDice(true); // Pass true for initial render to disable dice
             updateScorecardUI(); // Initial scorecard render
         });
     </script>

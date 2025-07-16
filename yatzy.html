@@ -336,109 +336,6 @@
             border-top: 2px solid #7f8c8d;
         }
 
-        /* Modal styles (shared for warning and help) */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Changed to none */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-            display: flex; /* Added display: flex here */
-        }
-
-        .modal-content {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.visible .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-content h2 {
-            color: #2c3e50; /* Changed to a neutral color for general modals */
-            margin-bottom: 20px;
-            font-size: 1.8em;
-        }
-
-        .modal-content p {
-            font-size: 1.1em;
-            color: #555;
-            margin-bottom: 30px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .modal-buttons button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            box-shadow: none;
-            text-transform: none;
-            letter-spacing: normal;
-        }
-
-        /* Specific styles for warning modal buttons */
-        .modal-overlay#resetWarningModal .modal-content h2 {
-            color: #e74c3c; /* Keep red for warning */
-        }
-        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn:hover {
-            background: linear-gradient(45deg, #c0392b, #e74c3c);
-        }
-
-        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn {
-            background-color: #bdc3c7;
-            color: #34495e;
-        }
-
-        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn:hover {
-            background-color: #95a5a6;
-        }
-
-        /* Specific styles for help modal buttons */
-        .modal-overlay#helpModal .modal-buttons button.close-btn {
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: white;
-        }
-        .modal-overlay#helpModal .modal-buttons button.close-btn:hover {
-            background: linear-gradient(45deg, #2980b9, #3498db);
-        }
-
-        .credits {
-            font-size: 0.8em;
-            color: #7f8c8d;
-            margin-top: 20px;
-        }
-
 
         @media (max-width: 768px) {
             .game-container {
@@ -689,6 +586,9 @@
         let isSoundOn = true; // State for sound toggle
         let audioContext = null; // Global AudioContext instance
 
+        // New Yatzy bonus tracking
+        let totalYatzysClaimed = 0; // Counts total Yatzys (up to 3)
+
         // Scorecard state
         const scorecard = {
             // Upper Section Categories
@@ -706,7 +606,7 @@
             fullHouse: { value: 0, isFilled: false },
             smallStraight: { value: 0, isFilled: false },
             largeStraight: { value: 0, isFilled: false },
-            yatzy: { value: 0, isFilled: false },
+            yatzy: { value: 0, isFilled: false }, // This will now accumulate all Yatzy scores
             chance: { value: 0, isFilled: false }
         };
 
@@ -785,88 +685,83 @@
                 // Handle lower section categories
                 switch (categoryName) {
                     case 'onePair':
-                        // Find all values that form a pair or more (e.g., three of a kind also counts as a pair)
                         const pairsFoundOnePair = Object.keys(counts).filter(dieValue => counts[dieValue] >= 2).map(Number);
                         if (pairsFoundOnePair.length > 0) {
-                            // Get the highest value pair
                             const highestPairValue = Math.max(...pairsFoundOnePair);
                             score = highestPairValue * 2;
                         }
                         break;
                     case 'twoPair':
-                        // Find all values that form a pair or more
                         const pairsFoundTwoPair = Object.keys(counts).filter(dieValue => counts[dieValue] >= 2).map(Number);
-                        // Sort them in descending order to easily pick the two highest distinct pairs
                         pairsFoundTwoPair.sort((a, b) => b - a);
 
-                        if (pairsFoundTwoPair.length >= 2) {
-                            // Check if the two highest values are distinct
-                            if (pairsFoundTwoPair[0] !== pairsFoundTwoPair[1]) {
-                                score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
-                            } else if (pairsFoundTwoPair.length >= 3) {
-                                // Handles cases like [6,6,6,5,5] where 6 is a triple and 5 is a pair
-                                // The two highest pairs are 6 and 5
-                                score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
-                            } else if (pairsFoundTwoPair.length === 1 && counts[pairsFoundTwoPair[0]] >= 4) {
-                                // If there's only one value with count >= 2, but it's a four of a kind (e.g., [4,4,4,4,1])
-                                // This means it forms two pairs of the same value.
-                                // In standard Yatzy, two pairs must be distinct values.
-                                // If the highest pair value has a count of 4 or 5, it does not count as two *distinct* pairs.
-                                // So, if pairsFoundTwoPair.length is 1, and that single value has count >= 4, it's not two pairs.
-                                score = 0; // Not two distinct pairs
-                            }
+                        if (pairsFoundTwoPair.length >= 2 && pairsFoundTwoPair[0] !== pairsFoundTwoPair[1]) {
+                            score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
+                        } else if (pairsFoundTwoPair.length >= 3 && pairsFoundTwoPair[0] === pairsFoundTwoPair[1]) {
+                            // Case like [6,6,6,5,5] where we can take two pairs (6+6 and 5+5)
+                            score = (pairsFoundTwoPair[0] * 2) + (pairsFoundTwoPair[1] * 2);
                         }
                         break;
                     case 'threeOfAKind':
-                        if (Object.values(counts).some(count => count >= 3)) {
-                            score = currentDice.reduce((sum, val) => sum + val, 0);
+                        // Sum of the three dice forming the triss
+                        const threeOfAKindValue = Object.keys(counts).find(dieValue => counts[dieValue] >= 3);
+                        if (threeOfAKindValue) {
+                            score = parseInt(threeOfAKindValue) * 3;
                         }
                         break;
                     case 'fourOfAKind':
-                        if (Object.values(counts).some(count => count >= 4)) {
-                            score = currentDice.reduce((sum, val) => sum + val, 0);
+                        // Sum of the four dice forming the fyrtal
+                        const fourOfAKindValue = Object.keys(counts).find(dieValue => counts[dieValue] >= 4);
+                        if (fourOfAKindValue) {
+                            score = parseInt(fourOfAKindValue) * 4;
                         }
                         break;
                     case 'fullHouse':
-                        const hasThree = Object.values(counts).some(count => count === 3);
-                        const hasTwo = Object.values(counts).some(count => count === 2);
+                        const hasThree = Object.keys(counts).find(dieValue => counts[dieValue] === 3);
+                        const hasTwo = Object.keys(counts).find(dieValue => counts[dieValue] === 2);
                         if (hasThree && hasTwo) {
-                            score = 25;
+                            score = (parseInt(hasThree) * 3) + (parseInt(hasTwo) * 2);
                         }
                         break;
                     case 'smallStraight':
-                        const uniqueDice = [...new Set(sortedDice)];
                         const smallStraightPatterns = [
-                            [1, 2, 3, 4],
-                            [2, 3, 4, 5],
-                            [3, 4, 5, 6]
+                            [1, 2, 3, 4, 5], // Check for 1-5
+                            [2, 3, 4, 5, 6]  // Check for 2-6
                         ];
+                        const uniqueSortedDice = [...new Set(sortedDice)];
                         for (const pattern of smallStraightPatterns) {
-                            // Check if the unique dice contain the pattern sequence
+                            // Check if the unique sorted dice contain the pattern sequence
                             let found = true;
                             for (let i = 0; i < pattern.length; i++) {
-                                if (!uniqueDice.includes(pattern[i])) {
+                                if (!uniqueSortedDice.includes(pattern[i])) {
                                     found = false;
                                     break;
                                 }
                             }
                             if (found) {
-                                score = 30;
+                                score = 15; // Fixed 15 points for small straight
                                 break;
                             }
                         }
                         break;
                     case 'largeStraight':
-                        const largeStraight1 = [1, 2, 3, 4, 5];
-                        const largeStraight2 = [2, 3, 4, 5, 6];
-                        if (sortedDice.every((val, i) => val === largeStraight1[i]) ||
-                            sortedDice.every((val, i) => val === largeStraight2[i])) {
-                            score = 40;
+                        const largeStraightPatterns = [
+                            [1, 2, 3, 4, 5],
+                            [2, 3, 4, 5, 6]
+                        ];
+                        // Check if the sorted dice exactly match a large straight pattern
+                        if (sortedDice.every((val, i) => val === largeStraightPatterns[0][i]) ||
+                            sortedDice.every((val, i) => val === largeStraightPatterns[1][i])) {
+                            score = 20; // Fixed 20 points for large straight
                         }
                         break;
                     case 'yatzy':
                         if (Object.values(counts).some(count => count === 5)) {
-                            score = 50;
+                            if (totalYatzysClaimed < 3) {
+                                score = 50; // Always 50 for a Yatzy, up to 3 times
+                            } else {
+                                score = 0; // Already claimed 3 Yatzys, no more points
+                            }
                         }
                         break;
                     case 'chance':

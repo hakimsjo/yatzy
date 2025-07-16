@@ -4,85 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎲 Yatzy 🎲</title>
+    <!-- Font Awesome for dice icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Import Google Font 'Inter' for a modern look */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif; /* Apply Inter font */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f0f4f8, #cdd5e0);
+            min-height: 100vh; /* Full viewport height */
+            background: linear-gradient(135deg, #f0f4f8, #cdd5e0); /* Soft gradient background */
             margin: 0;
             padding: 20px;
-            box-sizing: border-box;
-            color: #333;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            color: #333; /* Default text color */
         }
 
         .game-container {
-            background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff; /* White background for the game area */
+            border-radius: 20px; /* Rounded corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
             padding: 30px;
             text-align: center;
-            max-width: 600px;
-            width: 100%;
+            max-width: 600px; /* Max width for larger screens */
+            width: 100%; /* Full width on smaller screens */
             box-sizing: border-box;
             margin-bottom: 20px;
         }
 
         h1 {
-            color: #2c3e50;
+            color: #2c3e50; /* Dark blue heading */
             margin-bottom: 25px;
-            font-size: 2.5em;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            font-size: 2.5em; /* Large font size */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
         }
 
         .dice-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 20px; /* Space between dice */
             margin-bottom: 30px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allow dice to wrap on smaller screens */
         }
 
         .die {
             width: 80px;
             height: 80px;
-            background-color: #ecf0f1;
-            border: 4px solid #bdc3c7;
-            border-radius: 15px;
+            background-color: #ecf0f1; /* Light grey background */
+            border: 4px solid #bdc3c7; /* Grey border */
+            border-radius: 15px; /* Rounded corners */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 3em;
+            font-size: 3em; /* Large icon size */
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            color: #34495e;
+            cursor: pointer; /* Indicate clickable */
+            transition: all 0.2s ease-in-out; /* Smooth transitions for hover/held states */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            color: #34495e; /* Darker blue for dice icons */
             user-select: none; /* Prevent text selection */
         }
 
         .die.held {
-            background-color: #2ecc71;
-            border-color: #27ae60;
-            color: #ffffff;
-            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
-            transform: translateY(-5px);
+            background-color: #2ecc71; /* Green for held dice */
+            border-color: #27ae60; /* Darker green border */
+            color: #ffffff; /* White icon for held dice */
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4); /* Green glow effect */
+            transform: translateY(-5px); /* Slightly lift held dice */
         }
 
-        .die:hover:not(.held) {
-            background-color: #e0e6e9;
-            transform: translateY(-3px);
+        .die:hover:not(.held):not(.disabled) {
+            background-color: #e0e6e9; /* Lighter grey on hover */
+            transform: translateY(-3px); /* Slightly lift on hover */
         }
 
         .die.disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
+            opacity: 0.6; /* Dim disabled dice */
+            cursor: not-allowed; /* Indicate not clickable */
+            pointer-events: none; /* Prevent any pointer events */
+            box-shadow: none; /* Remove shadow for disabled */
+            transform: none; /* Reset transform */
         }
 
         /* Animation for rolling dice */
@@ -95,7 +100,7 @@
         }
 
         .die.rolling {
-            animation: roll 0.5s ease-out;
+            animation: roll 0.5s ease-out; /* Apply roll animation */
         }
 
         .roll-info, .total-info {
@@ -111,11 +116,26 @@
             color: #2c3e50;
         }
 
+        .game-message {
+            font-size: 1.3em;
+            color: #e74c3c; /* Red color for messages */
+            font-weight: bold;
+            margin-top: -10px; /* Adjust margin to fit well */
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out; /* Fade in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .button-container {
             display: flex;
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
+            margin-bottom: 15px; /* Added margin for sound button */
         }
 
         button {
@@ -129,28 +149,32 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex; /* Use flexbox for button content */
+            align-items: center; /* Vertically align content */
+            justify-content: center; /* Horizontally center content */
+            gap: 8px; /* Space between icon/emoji and text */
         }
 
         button#rollButton {
-            background: linear-gradient(45deg, #3498db, #2980b9);
+            background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient */
             color: white;
         }
 
-        button#rollButton:hover {
+        button#rollButton:hover:not(:disabled) {
             background: linear-gradient(45deg, #2980b9, #3498db);
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
         }
 
         button#rollButton:disabled {
-            background: #cccccc;
+            background: #cccccc; /* Grey when disabled */
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
         }
 
         button#resetButton {
-            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
             color: white;
         }
 
@@ -160,9 +184,21 @@
             box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
         }
 
+        button#soundToggleButton {
+            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient */
+            color: white;
+        }
+
+        button#soundToggleButton:hover {
+            background: linear-gradient(45deg, #e67e22, #f39c12);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        /* Responsive adjustments for smaller screens */
         @media (max-width: 600px) {
             .dice-container {
-                flex-direction: row;
+                flex-direction: row; /* Keep dice in a row, allow wrap */
                 gap: 15px;
             }
             .die {
@@ -176,6 +212,9 @@
             button {
                 padding: 12px 25px;
                 font-size: 1em;
+            }
+            .button-container {
+                flex-direction: column; /* Stack buttons vertically on small screens */
             }
         }
     </style>
@@ -192,15 +231,19 @@
         <div class="total-info">
             <p>Totalsumma: <span id="currentTotal">0</span></p>
         </div>
+        <div id="gameMessage" class="game-message" style="display: none;"></div>
         <div class="button-container">
-            <button id="rollButton">Kasta tärningar</button>
-            <button id="resetButton">Starta om</button>
+            <button id="rollButton"><i class="fas fa-dice"></i> Kasta tärningar</button>
+            <button id="resetButton"><i class="fas fa-redo-alt"></i> Starta om</button>
+            <button id="soundToggleButton" aria-label="Toggle sound" aria-pressed="true">
+                <i class="fas fa-volume-up"></i> Ljud PÅ
+            </button>
         </div>
-        by Hakim & Gemini
+        <p style="margin-top: 20px; font-size: 0.9em; color: #777;">by Hakim & Gemini</p>
     </div>
 
     <script>
-        // Array to store the current values of the five dice
+        // Array to store the current values of the five dice (1-6)
         let dice = [1, 1, 1, 1, 1];
         // Array to keep track of which dice are held (true if held, false if not)
         let heldDice = [false, false, false, false, false];
@@ -208,13 +251,29 @@
         let rollsMade = 0;
         // Maximum number of rolls allowed per round
         const maxRolls = 3;
+        // Audio context for sound generation
+        let audioContext;
+        // Flag to control if sound is enabled
+        let soundEnabled = true;
 
         // Get references to the HTML elements
         const diceContainer = document.getElementById('diceContainer');
         const rollsLeftSpan = document.getElementById('rollsLeft');
-        const currentTotalSpan = document.getElementById('currentTotal'); // New element for total
+        const currentTotalSpan = document.getElementById('currentTotal');
         const rollButton = document.getElementById('rollButton');
         const resetButton = document.getElementById('resetButton');
+        const gameMessageDiv = document.getElementById('gameMessage');
+        const soundToggleButton = document.getElementById('soundToggleButton');
+
+        // Map dice values to Font Awesome icon classes
+        const diceIcons = {
+            1: 'fa-dice-one',
+            2: 'fa-dice-two',
+            3: 'fa-dice-three',
+            4: 'fa-dice-four',
+            5: 'fa-dice-five',
+            6: 'fa-dice-six'
+        };
 
         /**
          * Calculates the sum of all dice values.
@@ -226,8 +285,9 @@
 
         /**
          * Renders the dice on the screen based on their current values and held status.
-         * Each die is represented by a div with its value and a class for styling.
+         * Each die is represented by a div containing a Font Awesome icon.
          * Click listeners are added to each die to toggle its held status.
+         * ARIA attributes are used for accessibility.
          */
         function renderDice() {
             // Clear existing dice elements
@@ -237,27 +297,52 @@
                 // Create a new div element for the die
                 const dieElement = document.createElement('div');
                 dieElement.classList.add('die'); // Add base styling class
+                
                 // Add 'held' class if the die is currently held
                 if (heldDice[index]) {
                     dieElement.classList.add('held');
+                    dieElement.setAttribute('aria-pressed', 'true'); // ARIA for held state
+                } else {
+                    dieElement.setAttribute('aria-pressed', 'false'); // ARIA for unheld state
                 }
+
                 // Add 'disabled' class if rolls are exhausted, to visually indicate they can't be clicked
                 if (rollsMade >= maxRolls) {
                     dieElement.classList.add('disabled');
+                    dieElement.setAttribute('aria-disabled', 'true'); // ARIA for disabled state
+                } else {
+                    dieElement.setAttribute('aria-disabled', 'false');
                 }
-                // Set the text content of the die to its value
-                dieElement.textContent = value;
+
+                // Create an <i> element for the Font Awesome icon
+                const iconElement = document.createElement('i');
+                iconElement.classList.add('fas', diceIcons[value]); // Add Font Awesome classes
+                dieElement.appendChild(iconElement); // Append icon to die element
+
+                // Set ARIA label for screen readers
+                dieElement.setAttribute('aria-label', `Tärning ${index + 1}: ${value}`);
+
                 // Add a click event listener to toggle the held status of the die
                 dieElement.addEventListener('click', () => toggleHold(index));
                 // Append the die element to the dice container
                 diceContainer.appendChild(dieElement);
             });
+
             // Update the display of remaining rolls
             rollsLeftSpan.textContent = maxRolls - rollsMade;
             // Update the display of the current total
             currentTotalSpan.textContent = calculateTotal();
+            
             // Disable the roll button if max rolls are reached
             rollButton.disabled = (rollsMade >= maxRolls);
+
+            // Display game over message if rolls are exhausted
+            if (rollsMade >= maxRolls) {
+                gameMessageDiv.textContent = 'Inga kast kvar! Klicka på "Starta om" för att spela igen.';
+                gameMessageDiv.style.display = 'block';
+            } else {
+                gameMessageDiv.style.display = 'none';
+            }
         }
 
         /**
@@ -265,7 +350,7 @@
          * @param {number} index - The index of the die to toggle (0-4).
          */
         function toggleHold(index) {
-            // Only allow toggling if there are rolls left (i.e., not after the last roll)
+            // Only allow toggling if there are rolls left
             if (rollsMade < maxRolls) {
                 heldDice[index] = !heldDice[index]; // Invert the held status
                 renderDice(); // Re-render the dice to update their appearance
@@ -280,6 +365,11 @@
         function rollDice() {
             // Only proceed if there are rolls left
             if (rollsMade < maxRolls) {
+                // Play sound if enabled
+                if (soundEnabled) {
+                    _generateAndPlayDiceSound();
+                }
+
                 // Add rolling animation class to dice that will be rolled
                 const dieElements = diceContainer.querySelectorAll('.die');
                 dieElements.forEach((dieElement, index) => {
@@ -292,6 +382,7 @@
                 setTimeout(() => {
                     dice.forEach((value, index) => {
                         if (!heldDice[index]) {
+                            // Generate a random number between 1 and 6 for unheld dice
                             dice[index] = Math.floor(Math.random() * 6) + 1;
                         }
                     });
@@ -311,16 +402,95 @@
          * All dice are reset to 1, no dice are held, and roll counter is reset.
          */
         function resetGame() {
-            dice = [1, 1, 1, 1, 1]; // Reset dice values
+            dice = [1, 1, 1, 1, 1]; // Reset dice values to 1
             heldDice = [false, false, false, false, false]; // Release all held dice
             rollsMade = 0; // Reset roll counter
             renderDice(); // Re-render the dice
             rollButton.disabled = false; // Enable the roll button
+            gameMessageDiv.style.display = 'none'; // Hide game over message
+        }
+
+        /**
+         * Toggles the sound on or off.
+         * Initializes AudioContext if it hasn't been already.
+         */
+        function toggleSound() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (soundEnabled) {
+                soundEnabled = false;
+                soundToggleButton.innerHTML = '<i class="fas fa-volume-mute"></i> Ljud AV';
+                soundToggleButton.setAttribute('aria-pressed', 'false');
+                // Suspend the audio context when sound is off to save resources
+                if (audioContext.state === 'running') {
+                    audioContext.suspend();
+                }
+            } else {
+                soundEnabled = true;
+                soundToggleButton.innerHTML = '<i class="fas fa-volume-up"></i> Ljud PÅ';
+                soundToggleButton.setAttribute('aria-pressed', 'true');
+                // Resume the audio context when sound is on
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
+        }
+
+        /**
+         * Internal function to generate and play the dice sound.
+         * Assumes audioContext is already initialized and resumed if necessary.
+         */
+        function _generateAndPlayDiceSound() {
+            // Ensure audioContext is initialized and running
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            try {
+                const duration = 0.5; // Total duration of the shaking sound
+                const numClicks = 8; // Number of individual "clicks"
+                const clickDuration = 0.05; // Duration of each click
+
+                for (let i = 0; i < numClicks; i++) {
+                    const startTime = audioContext.currentTime + (i * (duration / numClicks));
+
+                    // Create a short burst of white noise for the "click"
+                    const bufferSize = audioContext.sampleRate * clickDuration;
+                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let j = 0; j < bufferSize; j++) {
+                        output[j] = Math.random() * 0.8 - 0.4; // Slightly lower amplitude noise
+                    }
+
+                    const noiseSource = audioContext.createBufferSource();
+                    noiseSource.buffer = noiseBuffer;
+
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.4 + Math.random() * 0.2, startTime + 0.01); // Quick attack with slight randomness
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + clickDuration); // Fast decay
+
+                    noiseSource.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    noiseSource.start(startTime);
+                    noiseSource.stop(startTime + clickDuration);
+                }
+
+            } catch (e) {
+                console.error("Failed to generate and play sound:", e);
+            }
         }
 
         // Add event listeners to the buttons
         rollButton.addEventListener('click', rollDice);
         resetButton.addEventListener('click', resetGame);
+        soundToggleButton.addEventListener('click', toggleSound);
 
         // Initial render of the dice when the page loads
         document.addEventListener('DOMContentLoaded', renderDice);

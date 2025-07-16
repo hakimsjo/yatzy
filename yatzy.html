@@ -68,16 +68,19 @@
             background-color: #ecf0f1;
             border: 4px solid #bdc3c7;
             border-radius: 15px;
-            display: flex;
+            display: flex; /* Use flexbox for dot positioning */
             justify-content: center;
             align-items: center;
-            font-size: 4.5em; /* Adjusted font size for 50% larger dice */
+            position: relative; /* For absolute positioning of dots */
+            font-size: 0; /* Hide the number */
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             color: #34495e;
             user-select: none; /* Prevent text selection */
+            padding: 15px; /* Padding inside the die for dots */
+            box-sizing: border-box; /* Include padding in width/height */
         }
 
         /* Specific positioning for each die to form a '5' pattern */
@@ -115,7 +118,7 @@
             animation: pulse 1s infinite alternate; /* Optional: subtle pulse effect */
         }
 
-        /* New: All dice turn blue on the final roll */
+        /* All dice turn blue on the final roll */
         .die.final-roll-blue {
             background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient like roll button */
             border-color: #2980b9;
@@ -336,6 +339,156 @@
             border-top: 2px solid #7f8c8d;
         }
 
+        /* Modal styles (shared for warning and help) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Changed to none */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            display: flex; /* Added display: flex here */
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 {
+            color: #2c3e50; /* Changed to a neutral color for general modals */
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            box-shadow: none;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Specific styles for warning modal buttons */
+        .modal-overlay#resetWarningModal .modal-content h2 {
+            color: #e74c3c; /* Keep red for warning */
+        }
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.confirm-btn:hover {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn {
+            background-color: #bdc3c7;
+            color: #34495e;
+        }
+
+        .modal-overlay#resetWarningModal .modal-buttons button.cancel-btn:hover {
+            background-color: #95a5a6;
+        }
+
+        /* Specific styles for help modal buttons */
+        .modal-overlay#helpModal .modal-buttons button.close-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+        .modal-overlay#helpModal .modal-buttons button.close-btn:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+
+        .credits {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+
+        /* Dot styling */
+        .die .dot {
+            position: absolute;
+            width: 18%; /* Relative size of dots */
+            height: 18%;
+            background-color: #34495e; /* Dark dot color */
+            border-radius: 50%;
+            display: none; /* Hidden by default, shown by data-value classes */
+        }
+
+        /* Specific dot positions */
+        .die .dot-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .die .dot-tl { top: 15%; left: 15%; }
+        .die .dot-tr { top: 15%; right: 15%; }
+        .die .dot-bl { bottom: 15%; left: 15%; }
+        .die .dot-br { bottom: 15%; right: 15%; }
+        .die .dot-ml { top: 50%; left: 15%; transform: translateY(-50%); } /* Middle-left for 6 */
+        .die .dot-mr { top: 50%; right: 15%; transform: translateY(-50%); } /* Middle-right for 6 */
+
+        /* Show dots based on data-value attribute */
+        .die[data-value="1"] .dot-center { display: block; }
+
+        .die[data-value="2"] .dot-tl,
+        .die[data-value="2"] .dot-br { display: block; }
+
+        .die[data-value="3"] .dot-tl,
+        .die[data-value="3"] .dot-center,
+        .die[data-value="3"] .dot-br { display: block; }
+
+        .die[data-value="4"] .dot-tl,
+        .die[data-value="4"] .dot-tr,
+        .die[data-value="4"] .dot-bl,
+        .die[data-value="4"] .dot-br { display: block; }
+
+        .die[data-value="5"] .dot-tl,
+        .die[data-value="5"] .dot-tr,
+        .die[data-value="5"] .dot-center,
+        .die[data-value="5"] .dot-bl,
+        .die[data-value="5"] .dot-br { display: block; }
+
+        .die[data-value="6"] .dot-tl,
+        .die[data-value="6"] .dot-tr,
+        .die[data-value="6"] .dot-ml,
+        .die[data-value="6"] .dot-mr,
+        .die[data-value="6"] .dot-bl,
+        .die[data-value="6"] .dot-br { display: block; }
+
 
         @media (max-width: 768px) {
             .game-container {
@@ -353,6 +506,7 @@
                 width: 75px; /* Adjusted for 50% larger dice on smaller screens */
                 height: 75px;
                 font-size: 3em; /* Adjusted font size */
+                padding: 10px; /* Adjusted padding for smaller dice */
             }
             button {
                 padding: 10px 20px;
@@ -391,6 +545,7 @@
                 width: 60px; /* Adjusted for 50% larger dice on very small screens */
                 height: 60px;
                 font-size: 2.25em; /* Adjusted font size */
+                padding: 8px; /* Adjusted padding for smaller dice */
             }
             .button-container {
                 flex-direction: column;
@@ -409,11 +564,51 @@
         <div class="dice-section">
             <div class="dice-container" id="diceContainer">
                 <!-- Dice will be rendered here by JavaScript -->
-                <div class="die" id="die-0"></div>
-                <div class="die" id="die-1"></div>
-                <div class="die" id="die-2"></div>
-                <div class="die" id="die-3"></div>
-                <div class="die" id="die-4"></div>
+                <div class="die" id="die-0">
+                    <div class="dot dot-tl"></div>
+                    <div class="dot dot-tr"></div>
+                    <div class="dot dot-ml"></div>
+                    <div class="dot dot-center"></div> <!-- Corrected class name -->
+                    <div class="dot dot-mr"></div>
+                    <div class="dot dot-bl"></div>
+                    <div class="dot dot-br"></div>
+                </div>
+                <div class="die" id="die-1">
+                    <div class="dot dot-tl"></div>
+                    <div class="dot dot-tr"></div>
+                    <div class="dot dot-ml"></div>
+                    <div class="dot dot-center"></div> <!-- Corrected class name -->
+                    <div class="dot dot-mr"></div>
+                    <div class="dot dot-bl"></div>
+                    <div class="dot dot-br"></div>
+                </div>
+                <div class="die" id="die-2">
+                    <div class="dot dot-tl"></div>
+                    <div class="dot dot-tr"></div>
+                    <div class="dot dot-ml"></div>
+                    <div class="dot dot-center"></div> <!-- Corrected class name -->
+                    <div class="dot dot-mr"></div>
+                    <div class="dot dot-bl"></div>
+                    <div class="dot dot-br"></div>
+                </div>
+                <div class="die" id="die-3">
+                    <div class="dot dot-tl"></div>
+                    <div class="dot dot-tr"></div>
+                    <div class="dot dot-ml"></div>
+                    <div class="dot dot-center"></div> <!-- Corrected class name -->
+                    <div class="dot dot-mr"></div>
+                    <div class="dot dot-bl"></div>
+                    <div class="dot dot-br"></div>
+                </div>
+                <div class="die" id="die-4">
+                    <div class="dot dot-tl"></div>
+                    <div class="dot dot-tr"></div>
+                    <div class="dot dot-ml"></div>
+                    <div class="dot dot-center"></div> <!-- Corrected class name -->
+                    <div class="dot dot-mr"></div>
+                    <div class="dot dot-bl"></div>
+                    <div class="dot dot-br"></div>
+                </div>
             </div>
             <div class="roll-info">
                 <p>Kast kvar: <span id="rollsLeft">3</span></p>
@@ -724,34 +919,20 @@
                         }
                         break;
                     case 'smallStraight':
-                        const smallStraightPatterns = [
-                            [1, 2, 3, 4, 5], // Check for 1-5
-                            [2, 3, 4, 5, 6]  // Check for 2-6
-                        ];
-                        const uniqueSortedDice = [...new Set(sortedDice)];
-                        for (const pattern of smallStraightPatterns) {
-                            // Check if the unique sorted dice contain the pattern sequence
-                            let found = true;
-                            for (let i = 0; i < pattern.length; i++) {
-                                if (!uniqueSortedDice.includes(pattern[i])) {
-                                    found = false;
-                                    break;
-                                }
-                            }
-                            if (found) {
-                                score = 15; // Fixed 15 points for small straight
-                                break;
-                            }
+                        const uniqueDice = [...new Set(sortedDice)];
+                        // Check for 1-2-3-4-5 or 2-3-4-5-6
+                        const isSmallStraight = (uniqueDice.includes(1) && uniqueDice.includes(2) && uniqueDice.includes(3) && uniqueDice.includes(4)) ||
+                                                (uniqueDice.includes(2) && uniqueDice.includes(3) && uniqueDice.includes(4) && uniqueDice.includes(5)) ||
+                                                (uniqueDice.includes(3) && uniqueDice.includes(4) && uniqueDice.includes(5) && uniqueDice.includes(6));
+                        if (isSmallStraight) {
+                            score = 15; // Fixed 15 points for small straight
                         }
                         break;
                     case 'largeStraight':
-                        const largeStraightPatterns = [
-                            [1, 2, 3, 4, 5],
-                            [2, 3, 4, 5, 6]
-                        ];
                         // Check if the sorted dice exactly match a large straight pattern
-                        if (sortedDice.every((val, i) => val === largeStraightPatterns[0][i]) ||
-                            sortedDice.every((val, i) => val === largeStraightPatterns[1][i])) {
+                        const isLargeStraight1 = sortedDice.every((val, i) => val === (i + 1)); // 1,2,3,4,5
+                        const isLargeStraight2 = sortedDice.every((val, i) => val === (i + 2)); // 2,3,4,5,6
+                        if (isLargeStraight1 || isLargeStraight2) {
                             score = 20; // Fixed 20 points for large straight
                         }
                         break;
@@ -816,7 +997,8 @@
                     }
                 }
 
-                dieElement.textContent = value;
+                // Set the data-value attribute to control dot visibility via CSS
+                dieElement.setAttribute('data-value', value);
                 // Event listener is now added once in DOMContentLoaded, no need to add here
             });
             rollsLeftSpan.textContent = maxRolls - rollsMade;
@@ -922,28 +1104,49 @@
                 const actualScoreSpan = rowElement.querySelector('.actual-score');
                 const selectButton = rowElement.querySelector('.select-score-btn');
 
-                if (scorecard[category].isFilled) {
-                    // If filled, show actual score and disable button
-                    potentialScoreSpan.textContent = '';
-                    actualScoreSpan.textContent = scorecard[category].value;
-                    selectButton.disabled = true;
-                    selectButton.textContent = 'Vald';
-                    selectButton.style.backgroundColor = '#27ae60'; // Green for selected
-                } else {
-                    // If not filled, show potential score and enable button (if rolls made)
-                    potentialScoreSpan.textContent = `(${calculateCategoryScore(category, dice)})`;
-                    actualScoreSpan.textContent = '';
-                    // Only enable select button if at least one roll has been made AND scorecard is not full
-                    selectButton.disabled = (rollsMade === 0 || isScorecardFull());
-                    selectButton.textContent = 'Välj';
-                    selectButton.style.backgroundColor = '#3498db'; // Blue for selectable
+                if (category === 'yatzy') {
+                    const currentYatzyPotential = calculateCategoryScore('yatzy', dice);
+                    if (totalYatzysClaimed >= 3) {
+                        potentialScoreSpan.textContent = '';
+                        actualScoreSpan.textContent = scorecard.yatzy.value;
+                        selectButton.disabled = true;
+                        selectButton.textContent = 'Max Yatzy';
+                        selectButton.style.backgroundColor = '#cccccc';
+                    } else if (scorecard.yatzy.isFilled) { // If first Yatzy is already claimed
+                        potentialScoreSpan.textContent = currentYatzyPotential > 0 ? `(${currentYatzyPotential})` : '';
+                        actualScoreSpan.textContent = scorecard.yatzy.value;
+                        selectButton.disabled = (rollsMade === 0 || currentYatzyPotential === 0); // Only enable if Yatzy is rolled
+                        selectButton.textContent = 'Välj Bonus';
+                        selectButton.style.backgroundColor = '#f39c12'; // Orange for bonus selection
+                    } else { // First Yatzy not claimed yet
+                        potentialScoreSpan.textContent = currentYatzyPotential > 0 ? `(${currentYatzyPotential})` : '';
+                        actualScoreSpan.textContent = scorecard.yatzy.value;
+                        selectButton.disabled = (rollsMade === 0 || currentYatzyPotential === 0);
+                        selectButton.textContent = 'Välj';
+                        selectButton.style.backgroundColor = '#3498db';
+                    }
+                } else { // For all other categories
+                    if (scorecard[category].isFilled) {
+                        potentialScoreSpan.textContent = '';
+                        actualScoreSpan.textContent = scorecard[category].value;
+                        selectButton.disabled = true;
+                        selectButton.textContent = 'Vald';
+                        selectButton.style.backgroundColor = '#27ae60'; // Green for selected
+                    } else {
+                        potentialScoreSpan.textContent = `(${calculateCategoryScore(category, dice)})`;
+                        actualScoreSpan.textContent = '';
+                        selectButton.disabled = (rollsMade === 0 || isScorecardFull());
+                        selectButton.textContent = 'Välj';
+                        selectButton.style.backgroundColor = '#3498db';
+                    }
                 }
 
-                // Sum up scores for totals
+
+                // Sum up scores for totals (only if filled, as per original logic)
                 if (scorecard[category].isFilled) {
                     if (['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'].includes(category)) {
                         currentUpperSum += scorecard[category].value;
-                    } else {
+                    } else if (category !== 'yatzy') { // Exclude Yatzy from lowerSum for now, it's handled separately
                         currentLowerSum += scorecard[category].value;
                     }
                 }
@@ -959,12 +1162,20 @@
             upperTotalScore = upperSum + upperBonus;
             upperTotalElement.textContent = upperTotalScore;
 
-            // Update Lower Section Total
-            lowerTotalScore = currentLowerSum;
+            // Update Lower Section Total (excluding the main Yatzy score, which is now part of grandTotal)
+            // The main Yatzy score (50) is part of scorecard.yatzy.value.
+            // We need to add all filled lower section categories *except* the main Yatzy score
+            // to lowerTotalScore, and then add the full scorecard.yatzy.value to grandTotal.
+            lowerTotalScore = 0;
+            for (const category in scorecard) {
+                if (scorecard[category].isFilled && !['ones', 'twos', 'threes', 'fours', 'fives', 'sixes', 'yatzy'].includes(category)) {
+                    lowerTotalScore += scorecard[category].value;
+                }
+            }
             lowerTotalElement.textContent = lowerTotalScore;
 
-            // Update Grand Total
-            grandTotalScore = upperTotalScore + lowerTotalScore;
+            // Update Grand Total - includes upper total, lower total (excluding Yatzy), and all Yatzy points
+            grandTotalScore = upperTotalScore + lowerTotalScore + scorecard.yatzy.value;
             grandTotalElement.textContent = grandTotalScore;
         }
 
@@ -973,16 +1184,29 @@
          * @param {string} categoryName - The name of the category to select.
          */
         function selectScore(categoryName) {
-            if (scorecard[categoryName].isFilled) {
+            // Prevent re-selecting already filled categories (except for Yatzy bonus scenario)
+            if (scorecard[categoryName].isFilled && categoryName !== 'yatzy') {
                 console.log(`Kategori ${categoryName} är redan vald.`);
-                return; // Category already filled, do nothing
+                return;
             }
 
-            const score = calculateCategoryScore(categoryName, dice);
-            scorecard[categoryName].value = score;
-            scorecard[categoryName].isFilled = true;
+            const calculatedScore = calculateCategoryScore(categoryName, dice);
 
-            // Reset for next round if scorecard is not full
+            if (categoryName === 'yatzy') {
+                if (calculatedScore === 50 && totalYatzysClaimed < 3) { // Check if it's a Yatzy roll and limit not reached
+                    scorecard.yatzy.value += 50; // Add 50 points
+                    scorecard.yatzy.isFilled = true; // Mark as filled after first claim
+                    totalYatzysClaimed++;
+                } else {
+                    console.log("Kan inte välja Yatzy: Ingen Yatzy rullad eller max antal Yatzys redan valda.");
+                    return; // Do not reset round if selection was invalid
+                }
+            } else { // For all other categories
+                scorecard[categoryName].value = calculatedScore;
+                scorecard[categoryName].isFilled = true;
+            }
+
+            // Reset for next round if a valid score was selected and scorecard is not full
             if (!isScorecardFull()) {
                 dice = [1, 1, 1, 1, 1];
                 heldDice = [false, false, false, false, false];
@@ -1003,6 +1227,9 @@
             dice = [1, 1, 1, 1, 1];
             heldDice = [false, false, false, false, false];
             rollsMade = 0;
+
+            // Reset Yatzy bonus tracking
+            totalYatzysClaimed = 0;
 
             // Reset scorecard
             for (const category in scorecard) {

@@ -4,217 +4,263 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎲 Yatzy 🎲</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%233b82f6'/%3E%3Cstop offset='100%25' stop-color='%231d4ed8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23bg)'/%3E%3Ccircle cx='30' cy='30' r='9' fill='%23ffffff'/%3E%3Ccircle cx='70' cy='30' r='9' fill='%23ffffff'/%3E%3Ccircle cx='50' cy='50' r='9' fill='%23fbbf24'/%3E%3Ccircle cx='30' cy='70' r='9' fill='%23ffffff'/%3E%3Ccircle cx='70' cy='70' r='9' fill='%23ffffff'/%3E%3C/svg%3E">
     <!-- Font Awesome for dice icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Import Google Font 'Inter' for a modern look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        * {
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Inter', sans-serif; /* Apply Inter font */
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Full viewport height */
-            background: linear-gradient(135deg, #f0f4f8, #cdd5e0); /* Soft gradient background */
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2f6 0%, #dce4ec 50%, #cbd5e1 100%);
             margin: 0;
-            padding: 20px;
-            box-sizing: border-box; /* Include padding in element's total width and height */
-            color: #333; /* Default text color */
+            padding: 24px 16px;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
         }
 
         .game-container {
-            background-color: #ffffff; /* White background for the game area */
-            border-radius: 20px; /* Rounded corners */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
-            padding: 30px;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+            padding: 32px 28px;
             text-align: center;
-            max-width: 600px; /* Max width for larger screens */
-            width: 100%; /* Full width on smaller screens */
-            box-sizing: border-box;
-            margin-bottom: 20px;
+            max-width: 580px;
+            width: 100%;
+            backdrop-filter: blur(12px);
         }
 
         h1 {
-            color: #2c3e50; /* Dark blue heading */
-            margin-bottom: 25px;
-            font-size: 2.5em; /* Large font size */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
+            color: #1e293b;
+            margin: 0 0 24px 0;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .dice-container {
             display: flex;
             justify-content: center;
-            gap: 20px; /* Space between dice */
-            margin-bottom: 30px;
-            flex-wrap: wrap; /* Allow dice to wrap on smaller screens */
+            gap: 14px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
         }
 
         .die {
-            width: 80px;
-            height: 80px;
-            background-color: #ecf0f1; /* Light grey background */
-            /* border: 4px solid #bdc3c7; */ /* Removed border */
-            border-radius: 15px; /* Rounded corners */
+            width: 68px;
+            height: 68px;
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border: 2px solid #cbd5e1;
+            border-radius: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 5em; /* Increased font size to make icon fill the square */
-            font-weight: bold;
-            cursor: pointer; /* Indicate clickable */
-            transition: all 0.2s ease-in-out; /* Smooth transitions for hover/held states */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
-            color: #34495e; /* Darker blue for dice icons */
-            user-select: none; /* Prevent text selection */
+            font-size: 4em;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+            color: #34495e;
+            user-select: none;
         }
 
         .die.held {
-            background-color: #2ecc71; /* Green for held dice */
-            border-color: #27ae60; /* Darker green border */
-            color: #ffffff; /* White icon for held dice */
-            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4); /* Green glow effect */
-            transform: translateY(-5px); /* Slightly lift held dice */
+            background: linear-gradient(145deg, #22c55e, #16a34a);
+            border-color: #15803d;
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(34, 197, 94, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px) scale(1.03);
         }
 
         .die:hover:not(.held):not(.disabled) {
-            background-color: #e0e6e9; /* Lighter grey on hover */
-            transform: translateY(-3px); /* Slightly lift on hover */
+            background: #ffffff;
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
         }
 
         .die.disabled {
-            opacity: 0.6; /* Dim disabled dice */
-            cursor: not-allowed; /* Indicate not clickable */
-            pointer-events: none; /* Prevent any pointer events */
-            box-shadow: none; /* Remove shadow for disabled */
-            transform: none; /* Reset transform */
+            opacity: 0.65;
+            cursor: not-allowed;
+            pointer-events: none;
+            box-shadow: none;
+            transform: none;
         }
 
-        /* Animation for rolling dice */
         @keyframes roll {
             0% { transform: rotate(0deg) scale(1); opacity: 1; }
-            25% { transform: rotate(90deg) scale(1.1); opacity: 0.8; }
+            25% { transform: rotate(90deg) scale(1.08); opacity: 0.85; }
             50% { transform: rotate(180deg) scale(1); opacity: 1; }
-            75% { transform: rotate(270deg) scale(1.1); opacity: 0.8; }
+            75% { transform: rotate(270deg) scale(1.08); opacity: 0.85; }
             100% { transform: rotate(360deg) scale(1); opacity: 1; }
         }
 
         .die.rolling {
-            animation: roll 0.5s ease-out; /* Apply roll animation */
+            animation: roll 0.5s ease-out;
         }
 
         .roll-info, .total-info {
-            font-size: 1.2em;
-            margin-bottom: 15px;
-            color: #555;
-            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: #475569;
+            font-weight: 600;
         }
+
+        .roll-info p, .total-info p {
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
         .total-info {
-            margin-top: 10px;
-            margin-bottom: 25px;
-            font-size: 1.4em;
-            color: #2c3e50;
+            margin-bottom: 22px;
+        }
+
+        .roll-info span, .total-info span {
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 1.15em;
         }
 
         .game-message {
-            font-size: 1.3em;
-            color: #e74c3c; /* Red color for messages */
-            font-weight: bold;
-            margin-top: -10px; /* Adjust margin to fit well */
+            font-size: 1.15rem;
+            color: #ef4444;
+            font-weight: 700;
+            margin-top: -10px;
             margin-bottom: 20px;
-            animation: fadeIn 0.5s ease-out; /* Fade in animation */
+            animation: fadeIn 0.4s ease-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 15px; /* Added margin for sound button */
+            margin-top: 10px;
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-weight: bold;
+            padding: 11px 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: inherit;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex; /* Use flexbox for button content */
-            align-items: center; /* Vertically align content */
-            justify-content: center; /* Horizontally center content */
-            gap: 8px; /* Space between icon/emoji and text */
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.2px;
+            user-select: none;
+            text-transform: none;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
         }
 
         button#rollButton {
-            background: linear-gradient(45deg, #3498db, #2980b9); /* Blue gradient */
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
         }
 
         button#rollButton:hover:not(:disabled) {
-            background: linear-gradient(45deg, #2980b9, #3498db);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
         }
 
         button#rollButton:disabled {
-            background: #cccccc; /* Grey when disabled */
+            background: #e2e8f0;
+            color: #94a3b8;
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
         }
 
         button#resetButton {
-            background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient */
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
             color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
         }
 
         button#resetButton:hover {
-            background: linear-gradient(45deg, #c0392b, #e74c3c);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
         }
 
         button#soundToggleButton {
-            background: linear-gradient(45deg, #f39c12, #e67e22); /* Orange gradient */
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
         }
 
         button#soundToggleButton:hover {
-            background: linear-gradient(45deg, #e67e22, #f39c12);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
         }
 
-        /* Responsive adjustments for smaller screens */
         @media (max-width: 600px) {
-            .dice-container {
-                flex-direction: row; /* Keep dice in a row, allow wrap */
-                gap: 15px;
+            body {
+                padding: 14px 10px;
             }
-            .die {
-                width: 60px;
-                height: 60px;
-                font-size: 4em; /* Adjusted for smaller screens */
+            .game-container {
+                padding: 22px 16px;
+                border-radius: 18px;
             }
             h1 {
-                font-size: 2em;
+                font-size: 1.8rem;
+                margin-bottom: 18px;
             }
-            button {
-                padding: 12px 25px;
-                font-size: 1em;
+            .dice-container {
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+            .die {
+                width: 56px;
+                height: 56px;
+                font-size: 3.3em;
+                border-radius: 12px;
             }
             .button-container {
-                flex-direction: column; /* Stack buttons vertically on small screens */
+                flex-direction: column;
+                gap: 8px;
+            }
+            button {
+                width: 100%;
+                padding: 10px 14px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -239,7 +285,6 @@
                 <i class="fas fa-volume-up"></i> Ljud PÅ
             </button>
         </div>
-        <p style="margin-top: 20px; font-size: 0.9em; color: #777;">by Hakim</p>
     </div>
 
     <script>
